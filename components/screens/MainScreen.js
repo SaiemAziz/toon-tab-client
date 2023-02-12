@@ -4,7 +4,7 @@ import { View, Text, Image, StyleSheet, StatusBar } from 'react-native'
 import ButtonPrimary from '../utilities/ButtonPrimary';
 import ButtonSecondary from '../utilities/ButtonSecondary';
 import { Colors } from '../utilities/Colors';
-
+import LottieView from 'lottie-react-native';
 const MainScreen = ({ navigation, route }) => {
 
     let handleLogin = () => {
@@ -27,6 +27,7 @@ const MainScreen = ({ navigation, route }) => {
                     style={styles.img}
                     resizeMode="contain"
                 />
+
             </View>
             <View style={styles.buttonContainer}>
                 <ButtonSecondary onPress={handleLogin}>Login</ButtonSecondary>

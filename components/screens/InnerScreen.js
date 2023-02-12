@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useLayoutEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, Image, StyleSheet, StatusBar } from 'react-native'
 import ButtonPrimary from '../utilities/ButtonPrimary';
@@ -11,13 +11,25 @@ import TabButtons from '../TabButtons';
 import Videos from './TabScreens/Videos';
 import Posts from './TabScreens/Posts';
 import About from './TabScreens/About';
+import { AuthContext } from '../../App';
+import { StackActions, useIsFocused } from '@react-navigation/native';
 const InnerScreen = ({ navigation, route }) => {
-
+    let isFocused = useIsFocused()
+    let { user } = useContext(AuthContext)
     let [tab, setTab] = useState('POSTS')
+
+    useLayoutEffect(() => {
+        if (!user) {
+            navigation.dispatch(
+                StackActions.replace('Login')
+            );
+        }
+    }, [isFocused])
 
     let handlerProfile = () => {
         navigation.navigate("Profile")
     }
+
 
     return (
         <LinearGradient className="flex-1" colors={[Colors.backgroundColor, Colors.primary]}>
@@ -34,7 +46,7 @@ const InnerScreen = ({ navigation, route }) => {
                         {tab === 'POSTS' && 'Posts'}
                         {tab === 'ABOUT' && 'About Us'}
                     </Text>
-                    <View className="rounded-full overflow-hidden w-fit">
+                    <View className="rounded-full overflow-hidden w-fit z-50">
                         <Pressable className="justify-center items-center" android_ripple={{ color: "lightgreen" }} onPress={handlerProfile}>
                             <Icon name="person-circle-sharp" size={45} color="#5DB075" />
                         </Pressable>

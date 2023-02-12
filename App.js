@@ -11,7 +11,10 @@ import app from './firebaseConfig/firebase.config';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import InnerScreen from './components/screens/InnerScreen';
 import Profile from './components/screens/Profile';
-
+import { BACKEND_URI } from '@env'
+import Details from './components/screens/Details';
+import CommentScreen from './components/screens/CommentScreen';
+import LoadTimeScreen from './components/screens/LoadTimeScreen';
 
 
 // create context API
@@ -20,17 +23,24 @@ export const AuthContext = createContext('')
 
 export default function App() {
   let [user, setUser] = useState(null)
-  let [loading, setLoading] = useState(false)
+  let [loading, setLoading] = useState(true)
 
   const auth = getAuth(app)
 
   useLayoutEffect(() => {
-    setLoading(true)
     onAuthStateChanged(auth, (currentUser) => {
       if (currentUser?.uid) {
-        setUser(currentUser)
+        fetch(BACKEND_URI + `/user-info?email=${currentUser.email}`)
+          .then(res => res.json())
+          .then(data => {
+            setUser(data)
+            setLoading(false)
+          })
+          .catch(err => {
+            setUser(null)
+            setLoading(false)
+          });
       }
-      setLoading(false)
     })
   }, [])
 
@@ -62,10 +72,13 @@ export default function App() {
     <NavigationContainer>
       <AuthContext.Provider value={contextValue}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {/* <Stack.Screen name="LoadTimeScreen" component={LoadTimeScreen} /> */}
           <Stack.Screen name="MainScreen" component={MainScreen} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="InnerScreen" component={InnerScreen} />
+          <Stack.Screen name="CommentScreen" component={CommentScreen} />
           <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="Details" component={Details} />
         </Stack.Navigator>
       </AuthContext.Provider>
     </NavigationContainer>

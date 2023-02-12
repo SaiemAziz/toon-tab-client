@@ -1,4 +1,4 @@
-import { StyleSheet, Text, ImageBackground, TextInput, Modal, SafeAreaView, View, Alert, Pressable, Button, Image } from 'react-native'
+import { StyleSheet, Text, ImageBackground, TextInput, Modal, SafeAreaView, View, Alert, Pressable, Button, Image, ToastAndroid, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useLayoutEffect, useState } from 'react'
 import ButtonPrimary from '../../utilities/ButtonPrimary'
 import ButtonLink from '../../utilities/ButtonLink'
@@ -7,12 +7,12 @@ import { AuthContext } from '../../../App'
 import { useNavigation } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { IMGBB_URI } from '@env'
+import { IMGBB_URI, BACKEND_URI } from '@env'
 
 const Register = ({ regShow, setRegShow }) => {
     let imgBBURI = `https://api.imgbb.com/1/upload?key=${IMGBB_URI}`
     let navigation = useNavigation()
-    let { registerUser, user, loading, setLoading, setUser, updateUser } = useContext(AuthContext)
+    let { registerUser, user, loading, setLoading, setUser, updateUser, logoutUser } = useContext(AuthContext)
     let [email, setEmail] = useState('')
     let [userName, setUserName] = useState('')
     let [userNames, setUserNames] = useState('')
@@ -33,7 +33,7 @@ const Register = ({ regShow, setRegShow }) => {
         setAvailable('')
         setPass('')
         setCon('')
-        fetch('http://192.168.0.115:8000/all-users-usernames')
+        fetch(BACKEND_URI + '/all-users-usernames')
             .then(res => res.json())
             .then(data => setUserNames(data.userNames))
     }, [regShow])
@@ -91,24 +91,19 @@ const Register = ({ regShow, setRegShow }) => {
             userName,
             password: pass,
             birthDate,
-            email
+            email,
+            rating: 0
         }
-        mongoDBUserEntry(userInfo)
+
         registerUser(email, pass)
             .then((userCredential) => {
-                const currentUser = userCredential.user;
-                setUser(currentUser)
-                setLoading(false)
-                navigation.navigate("Test")
-                updateUser({
-                    displayName: userName,
-                    birthDate
-                }).then(() => { })
-                    .catch(() => { })
+                mongoDBUserEntry(userInfo)
+                logoutUser()
             })
             .catch((error) => {
                 Alert.alert("Registration Failed", error.code.replace('auth/', '').replaceAll('-', ' ').toUpperCase(), [{ text: "Okay" }])
                 setLoading(false)
+                return
             });
         setUserName('')
         setErr('')
@@ -120,14 +115,19 @@ const Register = ({ regShow, setRegShow }) => {
 
     let mongoDBUserEntry = (userInfo) => {
 
-        fetch('http://192.168.0.115:8000/insert-user', {
+        fetch(BACKEND_URI + '/insert-user', {
             method: 'POST',
             headers: {
                 "content-type": "application/json"
             },
             body: JSON.stringify(userInfo)
         }).then(res => res.json())
-            .then(data => data)
+            .then(data => {
+                setUser(data)
+                setLoading(false)
+                setRegShow(false)
+                ToastAndroid.show('Registration Successful, Please Login', ToastAndroid.SHORT);
+            })
     }
 
     return (
@@ -198,9 +198,14 @@ const Register = ({ regShow, setRegShow }) => {
                     </Pressable>
                     {err && <Text style={styles.errorText}>{err}</Text>}
                     <View style={styles.buttonContainer}>
-                        <ButtonPrimary onPress={regHandler}>
-                            Register
-                        </ButtonPrimary>
+                        {
+                            loading ?
+                                <ActivityIndicator size={40} />
+                                :
+                                <ButtonPrimary onPress={regHandler}>
+                                    Register
+                                </ButtonPrimary>
+                        }
                         <ButtonLink onPress={() => setRegShow(false)}
                         >
                             Old Member?

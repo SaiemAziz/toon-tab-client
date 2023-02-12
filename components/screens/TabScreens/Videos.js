@@ -16,7 +16,7 @@ const Videos = () => {
         // {
         //     showName: "ATTACK ON TITAN",
         //     title: "Top 10 Epic Moments in Attack on Titan",
-        //     id: "E6NhKGeH1-I"
+        //     id: "E6NhKGeH1"
         // },
     ]
     // const [playing, setPlaying] = useState(false);

@@ -1,11 +1,14 @@
-import { StyleSheet, Text, View, TextInput, ImageBackground, Alert, StatusBar, ToastAndroid } from 'react-native'
+import { StyleSheet, Text, View, TextInput, ImageBackground, Alert, StatusBar, ToastAndroid, ActivityIndicator } from 'react-native'
+import { StackActions } from '@react-navigation/native';
 import React, { useContext, useEffect, useLayoutEffect, useState } from 'react'
 import ButtonPrimary from '../../utilities/ButtonPrimary'
 import ButtonLink from '../../utilities/ButtonLink'
 import Register from './Register'
 import { Colors } from '../../utilities/Colors'
 import { AuthContext } from '../../../App'
+import { BACKEND_URI } from '@env'
 const Login = ({ navigation, route }) => {
+
     let { setUser, loading, loginUser, setLoading, user } = useContext(AuthContext)
     let [regShow, setRegShow] = useState(route?.params?.reg || false)
     let [email, setEmail] = useState('')
@@ -16,12 +19,7 @@ const Login = ({ navigation, route }) => {
         setEmail('')
         setErr('')
         setPass('')
-        if (user?.uid) {
-            ToastAndroid.show('User already logged in', ToastAndroid.SHORT);
-            navigation.navigate("InnerScreen")
-            setRegShow(false)
-        }
-    }, [regShow, loading])
+    }, [])
 
     let emailHandler = (e) => {
         setEmail(e)
@@ -42,9 +40,15 @@ const Login = ({ navigation, route }) => {
         loginUser(email, pass)
             .then((userCredential) => {
                 const currentUser = userCredential.user;
-                setUser(currentUser)
-                setLoading(false)
-                navigation.navigate("InnerScreen")
+                fetch(BACKEND_URI + `/user-info?email=${currentUser.email}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        setUser(data)
+                        setLoading(false)
+                        navigation.dispatch(
+                            StackActions.replace('InnerScreen')
+                        );
+                    })
             })
             .catch((error) => {
                 Alert.alert("Login Failed", error.code, [{ text: "Okay" }])
@@ -54,6 +58,12 @@ const Login = ({ navigation, route }) => {
         setEmail('')
         setPass('')
     }
+    if (!loading && user) {
+        ToastAndroid.show('User already logged in', ToastAndroid.SHORT);
+        navigation.dispatch(
+            StackActions.replace('InnerScreen')
+        );
+    }
     return (
         <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: Colors.backgroundColor, }}>
             <ImageBackground
@@ -62,33 +72,35 @@ const Login = ({ navigation, route }) => {
                 style={styles.imageBack}
                 resizeMode="contain"
             >
-
-                <View style={styles.container}>
-                    <Text style={styles.heading}>Log In</Text>
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder="Email"
-                        inputMode="email"
-                        kerBoardType="email-address"
-                        value={email}
-                        onChangeText={emailHandler}
-                    />
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder="Password"
-                        secureTextEntry={true}
-                        value={pass}
-                        onChangeText={passHandler}
-                    />
-                    {err && <Text style={styles.errorText}>{err}</Text>}
-                    <View style={styles.buttonContainer}>
-                        <ButtonPrimary onPress={loginHandler}>
-                            Login
-                        </ButtonPrimary>
-                        <ButtonLink onPress={() => setRegShow(true)}>New Member?</ButtonLink>
-                        <Register regShow={regShow} setRegShow={setRegShow} />
-                    </View>
-                </View>
+                {
+                    loading ? <ActivityIndicator size={50} color="green" /> :
+                        <View style={styles.container}>
+                            <Text style={styles.heading}>Log In</Text>
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder="Email"
+                                inputMode="email"
+                                kerBoardType="email-address"
+                                value={email}
+                                onChangeText={emailHandler}
+                            />
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder="Password"
+                                secureTextEntry={true}
+                                value={pass}
+                                onChangeText={passHandler}
+                            />
+                            {err && <Text style={styles.errorText}>{err}</Text>}
+                            <View style={styles.buttonContainer}>
+                                <ButtonPrimary onPress={loginHandler}>
+                                    Login
+                                </ButtonPrimary>
+                                <ButtonLink onPress={() => setRegShow(true)}>New Member?</ButtonLink>
+                                <Register regShow={regShow} setRegShow={setRegShow} />
+                            </View>
+                        </View>
+                }
             </ImageBackground>
         </View>
     )

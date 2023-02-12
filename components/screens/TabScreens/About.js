@@ -1,25 +1,46 @@
-import { View, Text, ImageBackground, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, ImageBackground, ScrollView, ToastAndroid } from 'react-native'
+import React, { useContext, useLayoutEffect, useState } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
 import MapView, { Marker } from 'react-native-maps';
-
+import { AuthContext } from '../../../App';
+import { BACKEND_URI } from '@env'
 const About = () => {
-    let [rating, setRating] = useState(0)
+    let { user, setUser, loading } = useContext(AuthContext)
+    let [rating, setRating] = useState(user?.rating || 0)
+
+
 
     let handlerRate = (rate) => {
         if (rate === rating) {
             setRating(0)
-            check(0)
+            postRating(0)
         }
         else {
             setRating(rate)
-            check(rate)
+            postRating(rate)
         }
     }
 
-    let check = (rate) => {
-        console.log(rate)
+    let postRating = (rate) => {
+        setUser(x => {
+            return {
+                ...x,
+                rating: rate
+            }
+        })
+        fetch(`${BACKEND_URI}/update-ratings?email=${user.email}`, {
+            method: 'PUT',
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({ rate })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (rate > 0)
+                    ToastAndroid.show('Thank You For Rating Us', ToastAndroid.SHORT);
+            })
     }
 
     return (
