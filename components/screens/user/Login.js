@@ -24,10 +24,6 @@ const Login = ({ navigation, route }) => {
             navigation.dispatch(
                 StackActions.replace('InnerScreen')
             );
-        } else {
-            // console.log(user);
-            // console.log(loading);
-            ToastAndroid.show('Something error ' + user?.email + ' ' + loading, ToastAndroid.SHORT);
         }
     }, [loading, user])
 

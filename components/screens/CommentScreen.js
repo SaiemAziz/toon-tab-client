@@ -6,26 +6,38 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BACKEND_URI } from '@env'
 import { AuthContext } from '../../App';
 import Comment from './TabScreens/Comments';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CommentScreen = ({ navigation, route }) => {
     let { user } = useContext(AuthContext)
     let [comments, setComments] = useState([])
     let [myComment, setMyComment] = useState('')
-    let [load, setLoad] = useState(true)
+    let [load, setLoad] = useState(false)
     let [loadSubmit, setLoadSubmit] = useState(false)
     let { postID, item } = route?.params
     useLayoutEffect(() => {
-        fetchComments()
+        fetchComments(true)
         return () => { }
     }, [])
 
-    let fetchComments = () => {
-        fetch(BACKEND_URI + `/all-comments?postID=${postID}`)
-            .then(res => res.json())
-            .then(data => {
-                setComments(data.comments)
-                setLoad(false)
-            })
+    let fetchComments = async (refetch = false) => {
+        setLoad(true)
+        let allComments = await AsyncStorage.getItem(`allComments-${postID}`)
+        if (allComments && !refetch) {
+            setComments(JSON.parse(allComments))
+        } else {
+            let res = await fetch(BACKEND_URI + `/all-comments?postID=${postID}`)
+            let data = await res.json()
+            await AsyncStorage.setItem(`allComments-${postID}`, JSON.stringify(data?.comments))
+            setComments(data?.comments)
+            setLoad(false)
+        }
+
+        // .then(res => res.json())
+        // .then(data => {
+        //     setComments(data.comments)
+        //     setLoad(false)
+        // })
     }
     let handlerComment = (e) => {
         // console.log(e.nativeEvent.text);
