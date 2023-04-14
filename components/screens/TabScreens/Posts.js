@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 const Posts = () => {
     let [showAdd, setShowAdd] = useState(false)
     let [loadPost, setLoadPost] = useState(true)
+
     let [posts, setPosts] = useState([])
 
     useLayoutEffect(() => {
@@ -55,22 +56,26 @@ export function SinglePost({ item, index }) {
     let { user } = useContext(AuthContext)
     let { image, details, authorEmail, time, title, _id } = item
     let [react, setReact] = useState('none')
+    let [loadReact, setLoadReact] = useState(false)
     let [likeCount, setLikeCount] = useState(0)
     let [disLikeCount, setDisLikeCount] = useState(0)
     let navigation = useNavigation()
     useLayoutEffect(() => {
-        if (user?.email)
+        if (user?.email){
+            setLoadReact(true)
             fetch(BACKEND_URI + `/react-check?email=${user.email}&postID=${_id}`)
-                .then(res => res.json())
-                .then(data => {
-                    setReact(data.react)
-                    setLikeCount(data.liked)
-                    setDisLikeCount(data.disliked)
-                })
+            .then(res => res.json())
+            .then(data => {
+                setReact(data.react)
+                setLikeCount(data.liked)
+                setDisLikeCount(data.disliked)
+                setLoadReact(false)
+            })
+        }
     }, [user])
 
     let handlerReact = (reaction) => {
-
+        setLoadReact(true)
         if (react === reaction) {
 
             deleteReact(reaction)
@@ -92,6 +97,7 @@ export function SinglePost({ item, index }) {
                 if (reaction === 'disliked')
                     setDisLikeCount(x => x - 1)
                 setReact('none')
+                setLoadReact(false)
             })
     }
 
@@ -121,6 +127,7 @@ export function SinglePost({ item, index }) {
                     }
                 }
                 setReact(reaction)
+                setLoadReact(false)
             })
     }
 
@@ -150,16 +157,22 @@ export function SinglePost({ item, index }) {
             <Pressable>
                 <Text className=" text-blue-500 text-right right-0" onPress={handlerSeeMore}>See More</Text>
             </Pressable>
-            <View className="flex-row gap-5 pt-2 justify-between ">
-                <Pressable className="flex-row gap-2 items-center" onPress={() => handlerReact('liked')}>
-                    <Icon name="like" size={15} color={react === 'liked' ? 'blue' : "gray"} />
-                    <Text className={react === 'liked' ? 'text-blue-700' : 'text-gray-500'}>{likeCount}</Text>
-                </Pressable>
-                <Pressable className="flex-row gap-2 items-center" onPress={() => handlerReact('disliked')}>
-                    <Icon name="dislike" size={15} color={react === 'disliked' ? 'crimson' : "gray"} />
-                    <Text className={react === 'disliked' ? 'text-red-700' : 'text-gray-500'}>{disLikeCount}</Text>
-                </Pressable>
-            </View>
+            {
+                loadReact ?
+                    <View className="justify-center items-center pt-2">
+                        <ActivityIndicator size={25} color="darkgreen" />
+                    </View> :
+                    <View className="flex-row gap-5 pt-2 justify-between ">
+                        <Pressable className="flex-row gap-2 items-center" onPress={() => handlerReact('liked')}>
+                            <Icon name="like" size={15} color={react === 'liked' ? 'blue' : "gray"} />
+                            <Text className={react === 'liked' ? 'text-blue-700' : 'text-gray-500'}>{likeCount}</Text>
+                        </Pressable>
+                        <Pressable className="flex-row gap-2 items-center" onPress={() => handlerReact('disliked')}>
+                            <Icon name="dislike" size={15} color={react === 'disliked' ? 'crimson' : "gray"} />
+                            <Text className={react === 'disliked' ? 'text-red-700' : 'text-gray-500'}>{disLikeCount}</Text>
+                        </Pressable>
+                    </View>
+            }
         </View>
     </View>
 }

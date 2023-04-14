@@ -11,10 +11,10 @@ const CommentScreen = ({ navigation, route }) => {
     let { user } = useContext(AuthContext)
     let [comments, setComments] = useState([])
     let [myComment, setMyComment] = useState('')
-    let [load, setLoad] = useState(false)
+    let [load, setLoad] = useState(true)
+    let [loadSubmit, setLoadSubmit] = useState(false)
     let { postID, item } = route?.params
     useLayoutEffect(() => {
-
         fetchComments()
         return () => { }
     }, [])
@@ -37,7 +37,8 @@ const CommentScreen = ({ navigation, route }) => {
     }
     let handlerSubmit = () => {
         if (myComment !== '') {
-            setLoad(true)
+            // setLoad(true)
+            setLoadSubmit(true)
             let comm = {
                 details: myComment,
                 postID: postID,
@@ -56,18 +57,37 @@ const CommentScreen = ({ navigation, route }) => {
                         setMyComment('')
                         comm = { ...comm, author: user, _id: data?.insertedId }
                         setComments([comm, ...comments])
-                        setLoad(false)
+                        // setLoad(false)
+                        setLoadSubmit(false)
                     }
                 })
         }
     }
+
+    let handleDelete = (commentID) => {
+        fetch(BACKEND_URI + `/delete-comment?commentID=${commentID}`, {
+            method: 'delete'
+        }).then(res => res.json())
+            .then(data => {
+                let remaining = comments.filter(comment => comment._id !== commentID)
+                setComments(remaining)
+            })
+    }
     return (
         <LinearGradient className="flex-1 p-5 pt-10" colors={['white', 'orange']}>
-            <FlatList
-                data={comments}
-                renderItem={({ item, index }) => <Comment comment={item} load={load} />}
-                keyExtractor={(item, index) => item._id}
-            />
+            {
+                load ?
+                    <View className="flex-1 justify-center items-center">
+                        <ActivityIndicator color="red" size={80} />
+                    </View> :
+                    <View className="flex-1">
+                        <FlatList
+                            data={comments}
+                            renderItem={({ item, index }) => <Comment comment={item} load={load} handleDelete={handleDelete} />}
+                            keyExtractor={(item, index) => item._id}
+                        />
+                    </View>
+            }
             {/* <ScrollView>
             {
                 comments.map((item, index) => <Comment
@@ -85,7 +105,7 @@ const CommentScreen = ({ navigation, route }) => {
                     placeholder="Please enter a comment"
                 />
                 {
-                    load ? <ActivityIndicator size="large" color="red" />
+                    loadSubmit ? <ActivityIndicator size="large" color="red" />
                         :
                         <View className="justify-between">
                             <View className="overflow-hidden rounded-xl">

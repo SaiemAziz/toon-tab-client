@@ -10,14 +10,19 @@ const Details = ({ navigation, route }) => {
     let { user } = useContext(AuthContext)
     let item = route?.params
     let { image, details, authorEmail, time, title, _id } = item
+    let modifiedDetails = details.split(". ")
     let [postAuthor, setPostAuthor] = useState(null)
     let [comments, setComments] = useState([])
     let [myComment, setMyComment] = useState('')
     let [load, setLoad] = useState(false)
     useLayoutEffect(() => {
+        setLoad(true)
         fetch(BACKEND_URI + `/my-user?email=${authorEmail}`)
             .then(res => res.json())
-            .then(data => setPostAuthor(data))
+            .then(data => {
+                setPostAuthor(data)
+                setLoad(false)
+            })
     }, [])
 
     let handlerBack = () => {
@@ -60,19 +65,28 @@ const Details = ({ navigation, route }) => {
                     resizeMode="contain"
                 />
                 <View className="my-5 flex-row justify-between items-center">
-                    <View className="flex-row gap-2 items-center">
-                        <Image
-                            source={{
-                                uri: postAuthor?.photoURL
-                            }}
-                            className="h-16 w-16 rounded-full"
-                        />
-                        <Text className="text-sm font-bold text-white bg-orange-500 rounded-full px-3 py-2">@{postAuthor?.userName}</Text>
-                    </View>
+                    {
+                        load ?
+                            <View className="justify-center items-center flex-1">
+                                <ActivityIndicator size={50} color="darkorange" />
+                            </View> :
+                            <View className="flex-row gap-2 items-center">
+                                <Image
+                                    source={{
+                                        uri: postAuthor?.photoURL
+                                    }}
+                                    className="h-16 w-16 rounded-full"
+                                />
+                                <Text className="text-sm font-bold text-white bg-orange-500 rounded-full px-3 py-2">@{postAuthor?.userName}</Text>
+                            </View>
+                    }
                     <Text className="text-orange-900 italic font-semibold">{time}</Text>
                 </View>
-                <Text className="mb-5 text-justify text-lg text-slate-700 border-b-8 pb-5 border-orange-900">
-                    {details}
+                <Text className="mb-5 text-justify text-lg text-slate-700 ">
+                    {modifiedDetails.slice(0, 1)}
+                </Text>
+                <Text className="mb-5 text-justify text-lg text-slate-700 ">
+                    {modifiedDetails.slice(1, 2)}
                 </Text>
 
             </ScrollView>

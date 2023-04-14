@@ -19,7 +19,17 @@ const Login = ({ navigation, route }) => {
         setEmail('')
         setErr('')
         setPass('')
-    }, [])
+        if (user) {
+            ToastAndroid.show('User already logged in', ToastAndroid.SHORT);
+            navigation.dispatch(
+                StackActions.replace('InnerScreen')
+            );
+        } else {
+            // console.log(user);
+            // console.log(loading);
+            ToastAndroid.show('Something error ' + user?.email + ' ' + loading, ToastAndroid.SHORT);
+        }
+    }, [loading, user])
 
     let emailHandler = (e) => {
         setEmail(e)
@@ -58,12 +68,12 @@ const Login = ({ navigation, route }) => {
         setEmail('')
         setPass('')
     }
-    if (!loading && user) {
-        ToastAndroid.show('User already logged in', ToastAndroid.SHORT);
-        navigation.dispatch(
-            StackActions.replace('InnerScreen')
-        );
-    }
+    // if (!loading && user) {
+    //     ToastAndroid.show('User already logged in', ToastAndroid.SHORT);
+    //     navigation.dispatch(
+    //         StackActions.replace('InnerScreen')
+    //     );
+    // }
     return (
         <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: Colors.backgroundColor, }}>
             <ImageBackground

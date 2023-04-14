@@ -30,18 +30,24 @@ export default function App() {
   useLayoutEffect(() => {
     onAuthStateChanged(auth, (currentUser) => {
       if (currentUser?.uid) {
-        fetch(BACKEND_URI + `/user-info?email=${currentUser.email}`)
+        fetch(BACKEND_URI + `/user-info?email=${currentUser?.email}`)
           .then(res => res.json())
           .then(data => {
             setUser(data)
             setLoading(false)
+            console.log(loading);
           })
           .catch(err => {
             setUser(null)
             setLoading(false)
           });
       }
-    })
+      else {
+        setUser(null)
+        setLoading(false)
+      }
+    }
+    )
   }, [])
 
   // register new USER
@@ -72,7 +78,7 @@ export default function App() {
     <NavigationContainer>
       <AuthContext.Provider value={contextValue}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {/* <Stack.Screen name="LoadTimeScreen" component={LoadTimeScreen} /> */}
+          <Stack.Screen name="LoadTimeScreen" component={LoadTimeScreen} />
           <Stack.Screen name="MainScreen" component={MainScreen} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="InnerScreen" component={InnerScreen} />

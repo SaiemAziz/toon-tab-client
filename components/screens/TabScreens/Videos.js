@@ -49,14 +49,14 @@ export default Videos
 
 export function SingleVideo({ item }) {
 
-    return <View>
+    return <View className=" mb-5 bg-black  overflow-hidden">
         <YoutubePlayer
             height={200}
             // play={playing}
             videoId={item.id}
         // onChangeState={onStateChange}
         />
-        <Text className="text-right  font-bold pt-5">{item.showName}</Text>
-        <Text className="text-2xl text-green-900 pb-5">{item.title}</Text>
+        <Text className="text-right text-green-600 font-bold p-5 pb-0">{item.showName}</Text>
+        <Text className="text-xl text-green-100 p-5 pt-0">{item.title}</Text>
     </View>
 } 

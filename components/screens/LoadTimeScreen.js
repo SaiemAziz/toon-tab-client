@@ -2,36 +2,33 @@ import { View, Text } from 'react-native'
 import React, { useLayoutEffect, useState } from 'react'
 import { StackActions } from '@react-navigation/native';
 import Lottie from 'lottie-react-native'
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 const LoadTimeScreen = ({ navigation, route }) => {
 
-    let [time, setTime] = useState(false)
 
 
     useLayoutEffect(() => {
         let timeSet = setTimeout(() => {
-            setTime(true)
+            navigation.dispatch(
+                StackActions.replace('MainScreen')
+            );
         }, 5000)
 
         return () => clearTimeout(timeSet)
     }, [])
 
-    if (time) {
-        navigation.dispatch(
-            StackActions.replace('MainScreen')
-        );
-    }
 
     return (
-        <View>
-            {/* <Lottie
+        <LinearGradient colors={["lightblue", "darkblue"]} className="flex-1 bg-blue-400">
+            <Lottie
                 autoPlay
                 loop
+                className="opacity-90 left-2"
                 // Find more Lottie files at https://lottiefiles.com/featured
-                source={require('../../assets/images/Smiling.json')}
-            /> */}
-        </View>
+                source={require('../../assets/images/106889-earkick-welcome-animation.json')}
+            />
+        </LinearGradient>
     )
 }
 

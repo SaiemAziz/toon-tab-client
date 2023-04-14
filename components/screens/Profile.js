@@ -11,11 +11,15 @@ const Profile = ({ navigation, route }) => {
     let [mongoInfo, setMongoInfo] = useState(null)
     let { user, setLoading, setUser, logoutUser } = useContext(AuthContext)
     // console.log(user)
+    let [loadUser, setLoadUSer] = useState(true)
     let [tab, setTab] = useState('posts')
     useLayoutEffect(() => {
         fetch(`${BACKEND_URI}/my-user?email=${user?.email}`)
             .then(res => res.json())
-            .then(data => setMongoInfo(data))
+            .then(data => {
+                setLoadUSer(false)
+                setMongoInfo(data)
+            })
     }, [user])
 
     let handlerLogout = () => {
@@ -60,22 +64,28 @@ const Profile = ({ navigation, route }) => {
                 </View>
             </LinearGradient>
             <SafeAreaView>
-                <View className="-mt-20">
+                {
+                    loadUser ?
+                        <View className="justify-center items-center h-[240px]">
+                            <ActivityIndicator size={70} color="purple" />
+                        </View> :
+                        <View className="-mt-20">
 
-                    <View className="mx-auto  overflow-hidden mb-5 rounded-[200px] border-4 border-white h-56 w-56">
-                        <Image
-                            className="h-full w-full"
-                            source={{
-                                uri: `${mongoInfo?.photoURL || "https://media.istockphoto.com/id/526947869/vector/man-silhouette-profile-picture.jpg?s=612x612&w=0&k=20&c=5I7Vgx_U6UPJe9U2sA2_8JFF4grkP7bNmDnsLXTYlSc="}`
-                            }}
-                            fadeDuration={1000}
-                        />
-                    </View>
-                    <Text className="text-center font-semibold text-2xl text-blue-900">@{mongoInfo?.userName || "No Name"}</Text>
-                    <Text className="text-center italic text-2xl mb-3">{mongoInfo?.birthDate || "No Birthdate"}</Text>
-                    <View>
-                    </View>
-                </View>
+                            <View className="mx-auto  overflow-hidden mb-5 rounded-[200px] border-4 border-white h-56 w-56">
+                                <Image
+                                    className="h-full w-full"
+                                    source={{
+                                        uri: `${mongoInfo?.photoURL || "https://media.istockphoto.com/id/526947869/vector/man-silhouette-profile-picture.jpg?s=612x612&w=0&k=20&c=5I7Vgx_U6UPJe9U2sA2_8JFF4grkP7bNmDnsLXTYlSc="}`
+                                    }}
+                                    fadeDuration={1000}
+                                />
+                            </View>
+                            <Text className="text-center font-semibold text-2xl text-blue-900">@{mongoInfo?.userName || "No Name"}</Text>
+                            <Text className="text-center italic text-2xl mb-3">{mongoInfo?.birthDate || "No Birthdate"}</Text>
+                            <View>
+                            </View>
+                        </View>
+                }
             </SafeAreaView>
             <View className="flex-1 p-5 ">
                 <View className="flex-row gap-2">
